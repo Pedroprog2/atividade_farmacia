@@ -187,3 +187,48 @@ if submeter:
             
         df.sort_values(by="Nome", ascending=True).to_csv(csv_file, index=False)
         st.success("✅ Titulação registrada e submetida com sucesso!")
+
+
+
+# --- PAINEL DE CONTROLE DO PROFESSOR ---
+st.sidebar.write("---")
+if st.sidebar.checkbox("🔒 Acesso do Professor"):
+    senha = st.sidebar.text_input("Senha de Acesso:", type="password")
+    if senha == "prof123":  # Altere para sua senha de preferência
+        st.header("📊 Painel do Professor - Respostas da Titulação")
+        
+        csv_file = "titulacoes_alunos.csv"
+        if os.path.exists(csv_file):
+            df_prof = pd.read_csv(csv_file)
+            
+            # Exibe a tabela ordenada alfabeticamente
+            st.subheader("Lista de Alunos Respondentes (Ordem Alfabética)")
+            st.dataframe(df_prof)
+            
+            col_d1, col_d2 = st.columns(2)
+            
+            # Botão 1: Download da Planilha CSV
+            with col_d1:
+                csv_data = df_prof.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="📥 Baixar Planilha CSV (Ordenada)",
+                    data=csv_data,
+                    file_name="respostas_titulacao_ordenadas.csv",
+                    mime="text/csv"
+                )
+                
+            # Botão 2: Download do Gabarito Comparativo
+            with col_d2:
+                # Cria uma coluna indicando o erro relativo da titulação do aluno
+                df_prof["Erro_Volume_mL"] = (df_prof["V_Encontrado_Aluno"] - df_prof["V_Equivalencia_Gabarito"]).round(2)
+                csv_gabarito = df_prof.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="🎯 Baixar Tabela com Erro de Titulação",
+                    data=csv_gabarito,
+                    file_name="gabarito_titulacao_alunos.csv",
+                    mime="text/csv"
+                )
+        else:
+            st.info("Nenhuma submissão realizada até o momento.")
+    elif senha:
+        st.sidebar.error("Senha incorreta.")
