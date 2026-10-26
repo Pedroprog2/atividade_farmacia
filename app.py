@@ -78,26 +78,70 @@ st.info(f"**Estado da Solução:** {estado_texto}")
 
 # --- 4. DESENHO DINÂMICO DA BURETA E ERLENMEYER (PIL) ---
 def desenhar_titulacao(v_adicionado, cor_rgb):
-    img = Image.new("RGBA", (300, 350), (255, 255, 255, 0))
+    # Cria uma imagem maior para melhor resolução (400x500)
+    img = Image.new("RGBA", (400, 500), (255, 255, 255, 0))
     draw = ImageDraw.Draw(img)
 
-    # Desenhando a Bureta (Tubo superior)
-    draw.rectangle([135, 20, 165, 180], outline="black", width=2)
-    # Menisco/Líquido na Bureta (diminui conforme v_adicionado aumenta)
-    altura_liquido = max(30, 170 - int(v_adicionado * 5))
-    draw.rectangle([137, altura_liquido, 163, 178], fill=(173, 216, 230, 180))
+    # 1. BURETA (Suporte + Tubo + Escala Graduada)
+    # Haste do Suporte Universal (cinza escuro)
+    draw.rectangle([80, 20, 90, 480], fill=(100, 100, 100, 255))
+    draw.rectangle([50, 470, 250, 485], fill=(80, 80, 80, 255)) # Base do suporte
+    draw.rectangle([90, 110, 180, 120], fill=(120, 120, 120, 255)) # Garra
+
+    # Corpo da Bureta (Vidro)
+    draw.rectangle([180, 20, 210, 220], outline=(50, 50, 50, 255), fill=(245, 245, 250, 100), width=2)
     
+    # Marcadores da escala (tracinhos)
+    for y in range(40, 210, 15):
+        draw.line([205, y, 210, y], fill=(50, 50, 50, 255), width=1)
+
+    # Líquido dentro da Bureta (diminui proporcionalmente)
+    altura_liquido = min(218, 30 + int(v_adicionado * 6))
+    if altura_liquido < 218:
+        draw.rectangle([182, altura_liquido, 208, 218], fill=(173, 216, 230, 200))
+
     # Torneira da Bureta
-    draw.rectangle([130, 180, 170, 188], fill="gray")
-    draw.line([150, 188, 150, 210], fill="black", width=2)
+    draw.rectangle([175, 220, 215, 230], fill=(60, 60, 60, 255))
+    draw.polygon([(190, 230), (192, 255), (198, 255), (200, 230)], fill=(200, 200, 200, 255))
 
-    # Gota caindo se estiver adicionando
+    # Gota caindo (se estiver adicionando líquido)
     if v_adicionado > 0:
-        draw.ellipse([147, 215, 153, 223], fill=(173, 216, 230, 255))
+        draw.ellipse([192, 265, 198, 275], fill=(173, 216, 230, 255))
 
-    # Desenhando o Erlenmeyer (Frasco inferior)
-    pontos_erlenmeyer = [(150, 230), (110, 260), (70, 320), (230, 320), (190, 260)]
-    draw.polygon(pontos_erlenmeyer, outline="black", fill=cor_rgb, width=2)
+    # 2. ERLENMEYER (Silhueta realista com gargalo e boca)
+    # Pontos que moldam a anatomia exata de um Erlenmeyer
+    silhueta_erlenmeyer = [
+        (180, 280), # Boca esquerda
+        (210, 280), # Boca direita
+        (210, 290), # Anel do gargalo direito
+        (200, 290), # Gargalo direito
+        (200, 330), # Início do corpo direito
+        (270, 440), # Base inferior direita
+        (265, 450), # Canto arredondado direito
+        (125, 450), # Canto arredondado esquerdo
+        (120, 440), # Base inferior esquerda
+        (190, 330), # Início do corpo esquerdo
+        (190, 290), # Gargalo esquerdo
+        (180, 290), # Anel do gargalo esquerdo
+    ]
+
+    # Preenchimento do líquido interno no frasco
+    liquido_erlenmeyer = [
+        (160, 380), # Nível superior esquerdo do líquido
+        (230, 380), # Nível superior direito do líquido
+        (266, 442), # Base direita
+        (124, 442)  # Base esquerda
+    ]
+    draw.polygon(liquido_erlenmeyer, fill=cor_rgb)
+    # Menisco curvo no topo do líquido
+    draw.chord([158, 375, 232, 385], start=0, end=180, fill=cor_rgb)
+
+    # Vidro externo do Erlenmeyer
+    draw.polygon(silhueta_erlenmeyer, outline=(60, 60, 60, 255), width=3)
+    
+    # Marcas de graduação de volume no corpo do Erlenmeyer (ex: 50mL, 100mL)
+    draw.line([165, 420, 180, 420], fill=(80, 80, 80, 200), width=2)
+    draw.line([175, 400, 190, 400], fill=(80, 80, 80, 200), width=2)
 
     return img
 
